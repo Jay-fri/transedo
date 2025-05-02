@@ -419,6 +419,132 @@ h2 {
   justify-content: center;
 }
 
+/* Distress Button Styles */
+.distress-button-container {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.distress-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 0;
+}
+
+.distress-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.distress-button.active {
+  background-color: #333;
+  animation: pulse 1.5s infinite;
+}
+
+.distress-button .material-icons {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(255, 0, 0, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Emergency Contacts Section Styles */
+.emergency-contacts-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.emergency-contact-form {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.add-contact-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.emergency-contacts-list {
+  margin-top: 15px;
+}
+
+.emergency-contact-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: white;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-name {
+  font-weight: bold;
+}
+
+.contact-phone {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.remove-contact-button {
+  background: none;
+  border: none;
+  color: #ff4d4d;
+  cursor: pointer;
+}
+
+.no-contacts {
+  color: #999;
+  text-align: center;
+  padding: 20px;
+}
+
 .expired-text {
   color: #f44336;
   margin-bottom: 20px;

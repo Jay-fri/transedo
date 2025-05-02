@@ -11,6 +11,10 @@ export default function UserDashboard() {
   const printRef = useRef();
   const [profileImage, setProfileImage] = useState(null);
   const [authError, setAuthError] = useState("");
+  // Add state for distress mode
+  const [distressMode, setDistressMode] = useState(false);
+  const [emergencyContacts, setEmergencyContacts] = useState([]);
+  const [currentLocation, setCurrentLocation] = useState(null);
 
   // Login form state
   const [loginEmail, setLoginEmail] = useState("");
@@ -202,6 +206,120 @@ export default function UserDashboard() {
     setProfileImage(null);
     setActiveTab("login");
   };
+  // Function to handle distress activation
+  const activateDistress = () => {
+    // Get current location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setCurrentLocation({ latitude, longitude });
+
+          // Show confirmation and activate distress mode
+          if (
+            window.confirm(
+              "Activate emergency mode? This will alert your emergency contacts."
+            )
+          ) {
+            setDistressMode(true);
+
+            // Get emergency contacts
+            const savedContacts = JSON.parse(
+              localStorage.getItem("emergencyContacts") || "[]"
+            );
+            setEmergencyContacts(savedContacts);
+
+            // If there are emergency contacts, simulate sending alerts
+            if (savedContacts.length > 0) {
+              alert(
+                `Distress signal sent to ${savedContacts.length} emergency contacts with your location!`
+              );
+            } else {
+              alert(
+                "No emergency contacts found. Please add contacts in your profile."
+              );
+            }
+          }
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+
+          // Still activate distress mode even without location
+          if (
+            window.confirm(
+              "Unable to get your location. Activate emergency mode anyway?"
+            )
+          ) {
+            setDistressMode(true);
+          }
+        }
+      );
+    } else {
+      alert("Geolocation is not supported by this browser.");
+      if (window.confirm("Activate emergency mode without location sharing?")) {
+        setDistressMode(true);
+      }
+    }
+  };
+
+  // Function to deactivate distress mode
+  const deactivateDistress = () => {
+    if (window.confirm("Deactivate emergency mode?")) {
+      setDistressMode(false);
+    }
+  };
+
+  // Function to add emergency contact
+  const addEmergencyContact = (e) => {
+    e.preventDefault();
+    const contactName = document.getElementById("emergencyContactName").value;
+    const contactPhone = document.getElementById("emergencyContactPhone").value;
+
+    if (!contactName || !contactPhone) {
+      alert("Please enter both name and phone number");
+      return;
+    }
+
+    const newContact = {
+      id: Date.now(),
+      name: contactName,
+      phone: contactPhone,
+    };
+    const updatedContacts = [...emergencyContacts, newContact];
+
+    setEmergencyContacts(updatedContacts);
+    localStorage.setItem("emergencyContacts", JSON.stringify(updatedContacts));
+
+    // Reset form
+    document.getElementById("emergencyContactName").value = "";
+    document.getElementById("emergencyContactPhone").value = "";
+
+    alert("Emergency contact added successfully!");
+  };
+
+  // Function to remove emergency contact
+  const removeEmergencyContact = (contactId) => {
+    if (window.confirm("Remove this emergency contact?")) {
+      const updatedContacts = emergencyContacts.filter(
+        (contact) => contact.id !== contactId
+      );
+
+      setEmergencyContacts(updatedContacts);
+      localStorage.setItem(
+        "emergencyContacts",
+        JSON.stringify(updatedContacts)
+      );
+    }
+  };
+
+  // Load emergency contacts on component mount
+  useEffect(() => {
+    const savedContacts = localStorage.getItem("emergencyContacts");
+
+    if (savedContacts) {
+      setEmergencyContacts(JSON.parse(savedContacts));
+    }
+  }, []);
 
   const handlePaystackSuccess = (reference) => {
     // Create a ticket with expiry date (1 week from now)
@@ -871,6 +989,84 @@ export default function UserDashboard() {
     }
   };
 
+  // Render distress button UI component
+  const renderDistressButton = () => {
+    if (!user) return null;
+
+    return (
+      <div className="distress-button-container">
+        {distressMode ? (
+          <button
+            className="distress-button active"
+            onClick={deactivateDistress}
+          >
+            <span className="material-icons">emergency</span>
+            <span>CANCEL EMERGENCY</span>
+          </button>
+        ) : (
+          <button className="distress-button" onClick={activateDistress}>
+            <span className="material-icons">emergency</span>
+            <span>EMERGENCY</span>
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  // Emergency contacts section for profile tab
+  const renderEmergencyContactsSection = () => {
+    return (
+      <div className="emergency-contacts-section">
+        <h3>Emergency Contacts</h3>
+        <p>These contacts will be notified in case of emergency</p>
+
+        <form onSubmit={addEmergencyContact} className="emergency-contact-form">
+          <div className="form-group">
+            <label htmlFor="emergencyContactName">Contact Name</label>
+            <input
+              type="text"
+              id="emergencyContactName"
+              placeholder="Enter contact name"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="emergencyContactPhone">Contact Phone</label>
+            <input
+              type="tel"
+              id="emergencyContactPhone"
+              placeholder="Enter contact phone number"
+            />
+          </div>
+          <button type="submit" className="add-contact-button">
+            <span className="material-icons">add</span>
+            Add Contact
+          </button>
+        </form>
+
+        <div className="emergency-contacts-list">
+          {emergencyContacts.length > 0 ? (
+            emergencyContacts.map((contact) => (
+              <div key={contact.id} className="emergency-contact-card">
+                <div className="contact-info">
+                  <span className="contact-name">{contact.name}</span>
+                  <span className="contact-phone">{contact.phone}</span>
+                </div>
+                <button
+                  className="remove-contact-button"
+                  onClick={() => removeEmergencyContact(contact.id)}
+                >
+                  <span className="material-icons">delete</span>
+                </button>
+              </div>
+            ))
+          ) : (
+            <p className="no-contacts">No emergency contacts added yet</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // Determine which footer to show based on authentication status
   const renderFooter = () => {
     if (!user) {
@@ -937,6 +1133,9 @@ export default function UserDashboard() {
       </header>
 
       <main className="main-content">{renderTabContent()}</main>
+
+      {/* Add the distress button here */}
+      {renderDistressButton()}
 
       {renderFooter()}
     </div>
